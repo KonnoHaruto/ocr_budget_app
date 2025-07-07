@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.ocr_budget_app"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
