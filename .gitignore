@@ -46,3 +46,7 @@ app.*.map.json
 
 # Generative AI related
 CLAUDE.md
+
+.vscode
+
+/ios/Runner/GoogleService-Info.plist
