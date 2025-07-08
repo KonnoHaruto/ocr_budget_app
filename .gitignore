@@ -48,3 +48,5 @@ app.*.map.json
 CLAUDE.md
 
 .vscode
+
+/ios/Runner/GoogleService-Info.plist
