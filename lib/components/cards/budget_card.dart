@@ -37,7 +37,10 @@ class BudgetCard extends HookConsumerWidget {
     useEffect(() {
       // 全体から残り予算まで減少するアニメーション
       animationController.reset(); // 1.0（全体）からリセット
-      animationController.animateTo(budget.remainingPercentage);
+      final targetValue = budget.remainingPercentage.clamp(0.0, 1.0);
+      if (targetValue.isFinite) {
+        animationController.animateTo(targetValue);
+      }
       return null; // cleanup function (不要な場合はnull)
     }, [budget.remainingPercentage]);
 
