@@ -2,11 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/main_tab_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'services/budget_cache.dart';
-import 'services/onboarding_service.dart';
+import 'providers/app_init_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +16,21 @@ void main() async {
   // BudgetCacheを初期化
   await BudgetCache.initialize();
   
-  runApp(const ProviderScope(child: MyApp()));
+  // オンボーディング状態をチェック
+  final prefs = await SharedPreferences.getInstance();
+  final done = prefs.getBool('onboarding_completed') ?? false;
+
+  runApp(
+    ProviderScope(
+      overrides: [
+        appInitializationProvider.overrideWith(
+          (_) => done ? AppInitializationState.showMainApp
+                      : AppInitializationState.showOnboarding,
+        )
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 final GoRouter _router = GoRouter(
@@ -66,32 +81,10 @@ class AppInitializer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return FutureBuilder<bool>(
-      future: OnboardingService.isFirstLaunch(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CupertinoPageScaffold(
-            backgroundColor: CupertinoColors.black,
-            child: Center(
-              child: CupertinoActivityIndicator(
-                color: CupertinoColors.white,
-                radius: 20,
-              ),
-            ),
-          );
-        }
-
-        final isFirstLaunch = snapshot.data ?? true;
-
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (isFirstLaunch) {
-            context.go('/onboarding');
-          } else {
-            context.go('/main');
-          }
-        });
-
-        return const CupertinoPageScaffold(
+    final initState = ref.watch(appInitializationProvider);
+    
+    return switch (initState) {
+      AppInitializationState.loading => const CupertinoPageScaffold(
           backgroundColor: CupertinoColors.black,
           child: Center(
             child: CupertinoActivityIndicator(
@@ -99,8 +92,9 @@ class AppInitializer extends ConsumerWidget {
               radius: 20,
             ),
           ),
-        );
-      },
-    );
+        ),
+      AppInitializationState.showOnboarding => const OnboardingScreen(),
+      AppInitializationState.showMainApp => const MainTabScreen(),
+    };
   }
 }
