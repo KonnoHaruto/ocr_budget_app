@@ -8,7 +8,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final budget = ref.watch(budgetProvider);
+    final budgetAsync = ref.watch(monthlyBudgetProvider);
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.black,
@@ -40,16 +40,48 @@ class SettingsScreen extends ConsumerWidget {
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                _buildBudgetSection(context, ref, budget),
-                const SizedBox(height: 32),
-                _buildAccountSection(context),
-                const SizedBox(height: 32),
-                _buildAppSection(context),
-              ],
+            child: budgetAsync.when(
+              data: (budget) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  _buildBudgetSection(context, ref, budget),
+                  const SizedBox(height: 32),
+                  _buildAccountSection(context),
+                  const SizedBox(height: 32),
+                  _buildAppSection(context),
+                ],
+              ),
+              loading: () => const Center(
+                child: CupertinoActivityIndicator(
+                  color: CupertinoColors.white,
+                ),
+              ),
+              error: (error, stackTrace) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      CupertinoIcons.exclamationmark_triangle,
+                      color: CupertinoColors.systemRed,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'データの読み込みに失敗しました',
+                      style: TextStyle(
+                        color: CupertinoColors.white,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    CupertinoButton(
+                      onPressed: () => ref.refresh(monthlyBudgetProvider),
+                      child: const Text('再試行'),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
@@ -217,9 +249,9 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showBudgetEditor(BuildContext context, WidgetRef ref, BudgetData budget) {
-    double currentBudget = budget.totalBudget;
     const double minBudget = 5000.0;
     const double maxBudget = 150000.0;
+    double currentBudget = budget.totalBudget.clamp(minBudget, maxBudget);
 
     showCupertinoModalPopup(
       context: context,
@@ -390,8 +422,8 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showSpentEditor(BuildContext context, WidgetRef ref, BudgetData budget) {
-    double currentSpent = budget.spentAmount;
-    final double maxSpent = budget.totalBudget;
+    final double maxSpent = budget.totalBudget > 0 ? budget.totalBudget : 100000.0;
+    double currentSpent = budget.spentAmount.clamp(0.0, maxSpent);
 
     showCupertinoModalPopup(
       context: context,

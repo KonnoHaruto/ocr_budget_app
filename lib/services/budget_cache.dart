@@ -42,19 +42,19 @@ class DailyBudget {
 
 class BudgetCache {
   static const _kKey = 'cached_daily_budget';
+  static DailyBudget? _memoryCache;
   
   static DailyBudget? load() {
-    try {
-      // 同期的にSharedPreferencesを取得することはできないため、
-      // 実際の実装ではここでキャッシュ済みの値を返すか、nullを返す
-      return null;
-    } catch (e) {
-      return null;
-    }
+    // メモリキャッシュから即座に取得
+    return _memoryCache;
   }
   
   static Future<void> save(DailyBudget data) async {
     try {
+      // メモリキャッシュに即座に保存
+      _memoryCache = data;
+      
+      // SharedPreferencesにも永続化
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_kKey, json.encode(data.toJson()));
     } catch (e) {
@@ -63,18 +63,17 @@ class BudgetCache {
     }
   }
   
-  static Future<DailyBudget?> loadAsync() async {
+  static Future<void> initialize() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final dataString = prefs.getString(_kKey);
       if (dataString != null) {
         final map = json.decode(dataString) as Map<String, dynamic>;
-        return DailyBudget.fromJson(map);
+        _memoryCache = DailyBudget.fromJson(map);
       }
-      return null;
     } catch (e) {
-      print('Failed to load budget cache: $e');
-      return null;
+      print('Failed to initialize budget cache: $e');
     }
   }
+  
 }

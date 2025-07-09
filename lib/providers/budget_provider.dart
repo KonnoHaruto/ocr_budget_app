@@ -2,10 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/budget_storage_service.dart';
 import '../services/budget_cache.dart';
 
-// unawaited helper
-void unawaited(Future<void> future) {
-  // Intentionally ignore the future
-}
 
 class BudgetData {
   final double remainingAmount;
@@ -20,8 +16,8 @@ class BudgetData {
     this.period = '今月',
   });
 
-  double get spentPercentage => spentAmount / totalBudget;
-  double get remainingPercentage => remainingAmount / totalBudget;
+  double get spentPercentage => totalBudget > 0 ? spentAmount / totalBudget : 0.0;
+  double get remainingPercentage => totalBudget > 0 ? remainingAmount / totalBudget : 0.0;
 }
 
 class DailyExpense {
@@ -34,14 +30,6 @@ class DailyExpense {
   });
 }
 
-// A. システム時刻レイヤ
-// 端末のローカル日付が0時をまたぐたびに"今日の日付"を自動更新
-final todayProvider = StreamProvider<DateTime>((ref) {
-  return Stream.periodic(const Duration(minutes: 1), (_) {
-    final now = DateTime.now();
-    return DateTime(now.year, now.month, now.day);
-  }).distinct();
-});
 
 // B. ドメイン状態レイヤ
 // Firestore や Hive から値を取ってくる既存Provider群
@@ -72,7 +60,7 @@ class BudgetNotifier extends AsyncNotifier<BudgetData> {
         remainingAmount: data['remainingAmount']?.toDouble() ?? 0.0,
       );
     } else {
-      // 初回起動時のデフォルト値
+      // 初回起動時のデフォルト値（オンボーディングで設定されるまで0）
       return BudgetData(
         remainingAmount: 0,
         totalBudget: 0,
@@ -111,6 +99,12 @@ class BudgetNotifier extends AsyncNotifier<BudgetData> {
       await updateBudget(
         totalBudget: totalBudget,
         spentAmount: currentData.spentAmount,
+      );
+    } else {
+      // 初回設定時はstateがnullの可能性があるため、デフォルト値で初期化
+      await updateBudget(
+        totalBudget: totalBudget,
+        spentAmount: 0,
       );
     }
   }
@@ -232,181 +226,6 @@ final monthlyExpensesProvider = StateNotifierProvider<MonthlyExpensesNotifier, L
   return MonthlyExpensesNotifier();
 });
 
-// C. 派生計算レイヤ
-// 今日残っている金額を そのつど算出 = 残額/残り日数
-
-final todayBudgetProvider = Provider<double>((ref) {
-  final today = ref.watch(todayProvider).value;
-  final monthlyBudgetAsync = ref.watch(monthlyBudgetProvider);
-  
-  if (today == null) return 0.0;
-  
-  // AsyncValueを適切に処理
-  return monthlyBudgetAsync.when(
-    data: (budget) {
-      final daysRemaining = _getDaysRemainingInMonth(today);
-      return daysRemaining > 0 ? budget.remainingAmount / daysRemaining : 0.0;
-    },
-    loading: () => 0.0,
-    error: (error, stackTrace) => 0.0,
-  );
-});
-
-final todaySpentProvider = Provider<double>((ref) {
-  final today = ref.watch(todayProvider).value;
-  final expensesNotifier = ref.read(monthlyExpensesProvider.notifier);
-  
-  if (today == null) return 0.0;
-  
-  return expensesNotifier.getTodaySpent(today);
-});
-
-final todayRemainingProvider = Provider<double>((ref) {
-  final todayBudget = ref.watch(todayBudgetProvider);
-  final todaySpent = ref.watch(todaySpentProvider);
-  
-  return todayBudget - todaySpent;
-});
-
-// レガシー互換性のためのプロバイダー
-final budgetProvider = Provider<BudgetData>((ref) {
-  final monthlyBudgetAsync = ref.watch(monthlyBudgetProvider);
-  
-  return monthlyBudgetAsync.when(
-    data: (budget) => budget,
-    loading: () => BudgetData(
-      remainingAmount: 0,
-      totalBudget: 0,
-      spentAmount: 0,
-    ),
-    error: (error, stackTrace) => BudgetData(
-      remainingAmount: 0,
-      totalBudget: 0,
-      spentAmount: 0,
-    ),
-  );
-});
-
-class DailyBudgetData {
-  final double dailyBudget;
-  final double todaySpent;
-  final double remainingToday;
-  final int daysRemaining;
-  final DateTime today;
-
-  DailyBudgetData({
-    required this.dailyBudget,
-    required this.todaySpent,
-    required this.remainingToday,
-    required this.daysRemaining,
-    required this.today,
-  });
-
-  double get todaySpentPercentage => dailyBudget > 0 ? todaySpent / dailyBudget : 0.0;
-  double get remainingTodayPercentage => dailyBudget > 0 ? remainingToday / dailyBudget : 0.0;
-}
-
-// DailyBudgetCtrl for Hydrated Riverpod pattern
-class DailyBudgetCtrl extends AsyncNotifier<DailyBudget> {
-  @override
-  Future<DailyBudget> build() async {
-    // 1. キャッシュを即座に emit
-    final cached = BudgetCache.load();
-    if (cached != null) {
-      state = AsyncData(cached);
-    }
-    
-    // 2. 正規計算 (Firestore/Hive 集計など)
-    final result = await _recompute();
-    
-    // 3. キャッシュ更新
-    unawaited(BudgetCache.save(result));
-    
-    return result;
-  }
-  
-  Future<DailyBudget> _recompute() async {
-    final today = DateTime.now();
-    final todayOnly = DateTime(today.year, today.month, today.day);
-    
-    // 月予算データを取得
-    final monthlyBudgetAsync = ref.read(monthlyBudgetProvider);
-    final monthlyBudget = monthlyBudgetAsync.value;
-    
-    if (monthlyBudget == null) {
-      return DailyBudget(
-        dailyBudget: 0.0,
-        todaySpent: 0.0,
-        remainingToday: 0.0,
-        daysRemaining: 0,
-        today: todayOnly,
-      );
-    }
-    
-    // 残り日数を計算
-    final daysRemaining = _getDaysRemainingInMonth(todayOnly);
-    
-    // 今日の予算 = 残り予算 / 残り日数
-    final dailyBudget = daysRemaining > 0 ? monthlyBudget.remainingAmount / daysRemaining : 0.0;
-    
-    // 今日の支出を取得
-    final expensesNotifier = ref.read(monthlyExpensesProvider.notifier);
-    final todaySpent = expensesNotifier.getTodaySpent(todayOnly);
-    
-    // 今日の残り予算
-    final remainingToday = dailyBudget - todaySpent;
-    
-    return DailyBudget(
-      dailyBudget: dailyBudget,
-      todaySpent: todaySpent,
-      remainingToday: remainingToday,
-      daysRemaining: daysRemaining,
-      today: todayOnly,
-    );
-  }
-  
-  // 外部から再計算をトリガー
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    final result = await _recompute();
-    unawaited(BudgetCache.save(result));
-    state = AsyncData(result);
-  }
-}
-
-final dailyBudgetProvider = AsyncNotifierProvider<DailyBudgetCtrl, DailyBudget>(() {
-  return DailyBudgetCtrl();
-});
-
-// レガシー互換性のためのプロバイダー
-final dailyBudgetDataProvider = Provider<DailyBudgetData>((ref) {
-  final dailyBudgetAsync = ref.watch(dailyBudgetProvider);
-  
-  return dailyBudgetAsync.when(
-    data: (dailyBudget) => DailyBudgetData(
-      dailyBudget: dailyBudget.dailyBudget,
-      todaySpent: dailyBudget.todaySpent,
-      remainingToday: dailyBudget.remainingToday,
-      daysRemaining: dailyBudget.daysRemaining,
-      today: dailyBudget.today,
-    ),
-    loading: () => DailyBudgetData(
-      dailyBudget: 0.0,
-      todaySpent: 0.0,
-      remainingToday: 0.0,
-      daysRemaining: 0,
-      today: DateTime.now(),
-    ),
-    error: (error, stackTrace) => DailyBudgetData(
-      dailyBudget: 0.0,
-      todaySpent: 0.0,
-      remainingToday: 0.0,
-      daysRemaining: 0,
-      today: DateTime.now(),
-    ),
-  );
-});
-
 // 支出追加のためのヘルパープロバイダー
 final addExpenseProvider = Provider<Future<void> Function({
   required double amount,
@@ -443,12 +262,123 @@ final addExpenseProvider = Provider<Future<void> Function({
   };
 });
 
+
+
+
+
+// DailyBudgetCtrl for Hydrated Riverpod pattern
+class DailyBudgetCtrl extends AsyncNotifier<DailyBudget> {
+  @override
+  Future<DailyBudget> build() async {
+    try {
+      // 1. キャッシュを即座に emit
+      final cached = BudgetCache.load();
+      if (cached != null) {
+        state = AsyncData(cached);
+      }
+      
+      // 2. 正規計算 (Firestore/Hive 集計など)
+      final result = await _recompute();
+      
+      // 3. キャッシュ更新
+      // ignore: unawaited_futures
+      BudgetCache.save(result);
+      
+      return result;
+    } catch (e, _) {
+      // エラー時にはデフォルト値を返す
+      print('DailyBudgetCtrl build error: $e');
+      final today = DateTime.now();
+      final todayOnly = DateTime(today.year, today.month, today.day);
+      
+      final defaultBudget = DailyBudget(
+        dailyBudget: 0.0,
+        todaySpent: 0.0,
+        remainingToday: 0.0,
+        daysRemaining: _getDaysRemainingInMonth(todayOnly),
+        today: todayOnly,
+      );
+      
+      return defaultBudget;
+    }
+  }
+  
+  Future<DailyBudget> _recompute() async {
+    final today = DateTime.now();
+    final todayOnly = DateTime(today.year, today.month, today.day);
+    
+    // 月予算データを非同期で取得
+    final monthlyBudgetAsync = ref.read(monthlyBudgetProvider);
+    
+    // まだロード中の場合は待機
+    final monthlyBudget = await monthlyBudgetAsync.when(
+      data: (budget) async => budget,
+      loading: () async {
+        // ロード中の場合は、完了まで待機
+        final completer = ref.read(monthlyBudgetProvider.future);
+        return await completer;
+      },
+      error: (error, stackTrace) async {
+        // エラーの場合はデフォルト値を返す
+        return BudgetData(
+          remainingAmount: 100000,
+          totalBudget: 100000,
+          spentAmount: 0,
+        );
+      },
+    );
+    
+    if (monthlyBudget.totalBudget == 0) {
+      return DailyBudget(
+        dailyBudget: 0.0,
+        todaySpent: 0.0,
+        remainingToday: 0.0,
+        daysRemaining: 0,
+        today: todayOnly,
+      );
+    }
+    
+    // 残り日数を計算
+    final daysRemaining = _getDaysRemainingInMonth(todayOnly);
+    
+    // 今日の予算 = 残り予算 / 残り日数
+    final dailyBudget = daysRemaining > 0 ? monthlyBudget.remainingAmount / daysRemaining : 0.0;
+    
+    // 今日の支出を取得
+    final expensesNotifier = ref.read(monthlyExpensesProvider.notifier);
+    final todaySpent = expensesNotifier.getTodaySpent(todayOnly);
+    
+    // 今日の残り予算
+    final remainingToday = dailyBudget - todaySpent;
+    
+    return DailyBudget(
+      dailyBudget: dailyBudget,
+      todaySpent: todaySpent,
+      remainingToday: remainingToday,
+      daysRemaining: daysRemaining,
+      today: todayOnly,
+    );
+  }
+  
+  // 外部から再計算をトリガー
+  Future<void> refresh() async {
+    state = const AsyncLoading();
+    final result = await _recompute();
+    // ignore: unawaited_futures
+    BudgetCache.save(result);
+    state = AsyncData(result);
+  }
+}
+
+final dailyBudgetProvider = AsyncNotifierProvider<DailyBudgetCtrl, DailyBudget>(() {
+  return DailyBudgetCtrl();
+});
+
+
+
 int _getDaysRemainingInMonth(DateTime date) {
   final lastDayOfMonth = DateTime(date.year, date.month + 1, 0);
   final daysRemaining = lastDayOfMonth.day - date.day + 1; // 今日を含む
   return daysRemaining > 0 ? daysRemaining : 1; // 最低1日は保証
 }
 
-// アニメーションプロバイダー（未使用のDailyBudgetCard用に保持）
-final monthlyProgressAnimationProvider = StateProvider<double>((ref) => 1.0);
-final dailyProgressAnimationProvider = StateProvider<double>((ref) => 1.0);
