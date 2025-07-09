@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:introduction_screen/introduction_screen.dart';
-import 'package:go_router/go_router.dart';
 import '../services/onboarding_service.dart';
 import '../providers/budget_provider.dart';
+import '../providers/app_init_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -327,7 +327,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
       // メイン画面に遷移
       if (mounted) {
-        context.go('/');
+        ref.read(appInitializationProvider.notifier).state = AppInitializationState.showMainApp;
       }
     } catch (e) {
       // エラーハンドリング
