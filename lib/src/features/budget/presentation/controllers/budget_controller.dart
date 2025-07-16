@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 class BudgetController extends AsyncNotifier<Budget?> {
   @override
   Future<Budget?> build() async {
-    final repository = ref.watch(budgetRepositoryProvider);
+    final repository = await ref.watch(budgetRepositoryProvider.future);
     return await repository.getCurrentBudget();
   }
 
@@ -18,7 +18,7 @@ class BudgetController extends AsyncNotifier<Budget?> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(budgetRepositoryProvider);
+      final repository = await ref.read(budgetRepositoryProvider.future);
       final budget = Budget(
         id: const Uuid().v4(),
         monthlyBudget: monthlyBudget,
@@ -43,7 +43,7 @@ class BudgetController extends AsyncNotifier<Budget?> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(budgetRepositoryProvider);
+      final repository = await ref.read(budgetRepositoryProvider.future);
       final updatedBudget = currentBudget.copyWith(
         monthlyBudget: monthlyBudget,
         monthEndDay: monthEndDay,
@@ -63,7 +63,7 @@ class BudgetController extends AsyncNotifier<Budget?> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(budgetRepositoryProvider);
+      final repository = await ref.read(budgetRepositoryProvider.future);
       await repository.deleteBudget(currentBudget.id);
       state = const AsyncValue.data(null);
     } catch (error, stackTrace) {
@@ -81,7 +81,7 @@ final budgetCalculationProvider = FutureProvider<BudgetCalculation?>((ref) async
   final budget = await ref.watch(budgetControllerProvider.future);
   if (budget == null) return null;
   
-  final transactionRepository = ref.watch(transactionRepositoryProvider);
+  final transactionRepository = await ref.watch(transactionRepositoryProvider.future);
   final transactions = await transactionRepository.getCurrentMonthTransactions();
   
   final now = DateTime.now();

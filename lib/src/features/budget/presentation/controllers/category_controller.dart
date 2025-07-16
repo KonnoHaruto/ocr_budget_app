@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 class CategoryController extends AsyncNotifier<List<Category>> {
   @override
   Future<List<Category>> build() async {
-    final repository = ref.watch(categoryRepositoryProvider);
+    final repository = await ref.watch(categoryRepositoryProvider.future);
     return await repository.getCategories();
   }
 
@@ -20,7 +20,7 @@ class CategoryController extends AsyncNotifier<List<Category>> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(categoryRepositoryProvider);
+      final repository = await ref.read(categoryRepositoryProvider.future);
       final category = Category(
         id: const Uuid().v4(),
         name: name,
@@ -45,7 +45,7 @@ class CategoryController extends AsyncNotifier<List<Category>> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(categoryRepositoryProvider);
+      final repository = await ref.read(categoryRepositoryProvider.future);
       await repository.updateCategory(category);
       
       // Refresh the category list
@@ -60,7 +60,7 @@ class CategoryController extends AsyncNotifier<List<Category>> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(categoryRepositoryProvider);
+      final repository = await ref.read(categoryRepositoryProvider.future);
       await repository.deleteCategory(categoryId);
       
       // Refresh the category list
@@ -75,7 +75,7 @@ class CategoryController extends AsyncNotifier<List<Category>> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(categoryRepositoryProvider);
+      final repository = await ref.read(categoryRepositoryProvider.future);
       final existingCategories = await repository.getCategories();
       
       if (existingCategories.isEmpty) {

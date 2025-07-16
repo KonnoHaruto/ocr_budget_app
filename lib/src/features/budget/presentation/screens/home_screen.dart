@@ -5,6 +5,7 @@ import '../controllers/transaction_controller.dart';
 import '../widgets/budget_card.dart';
 import '../widgets/quick_add_buttons.dart';
 import '../widgets/recent_transactions.dart';
+import 'budget_setup_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -132,19 +133,3 @@ class _NoBudgetSetup extends ConsumerWidget {
   }
 }
 
-// Placeholder for BudgetSetupScreen - to be implemented
-class BudgetSetupScreen extends StatelessWidget {
-  const BudgetSetupScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Budget Setup'),
-      ),
-      child: Center(
-        child: Text('Budget Setup Screen - To be implemented'),
-      ),
-    );
-  }
-}

@@ -27,21 +27,29 @@ final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
 });
 
-// Local data source providers
-final budgetLocalDataSourceProvider = Provider<BudgetLocalDataSource>((ref) {
-  return BudgetLocalDataSource();
+// Local data source providers with async initialization
+final budgetLocalDataSourceProvider = FutureProvider<BudgetLocalDataSource>((ref) async {
+  final dataSource = BudgetLocalDataSource();
+  await dataSource.init();
+  return dataSource;
 });
 
-final transactionLocalDataSourceProvider = Provider<TransactionLocalDataSource>((ref) {
-  return TransactionLocalDataSource();
+final transactionLocalDataSourceProvider = FutureProvider<TransactionLocalDataSource>((ref) async {
+  final dataSource = TransactionLocalDataSource();
+  await dataSource.init();
+  return dataSource;
 });
 
-final categoryLocalDataSourceProvider = Provider<CategoryLocalDataSource>((ref) {
-  return CategoryLocalDataSource();
+final categoryLocalDataSourceProvider = FutureProvider<CategoryLocalDataSource>((ref) async {
+  final dataSource = CategoryLocalDataSource();
+  await dataSource.init();
+  return dataSource;
 });
 
-final spendingAnalysisLocalDataSourceProvider = Provider<SpendingAnalysisLocalDataSource>((ref) {
-  return SpendingAnalysisLocalDataSource();
+final spendingAnalysisLocalDataSourceProvider = FutureProvider<SpendingAnalysisLocalDataSource>((ref) async {
+  final dataSource = SpendingAnalysisLocalDataSource();
+  await dataSource.init();
+  return dataSource;
 });
 
 // Remote data source providers
@@ -73,31 +81,31 @@ final spendingAnalysisRemoteDataSourceProvider = Provider<SpendingAnalysisRemote
   );
 });
 
-// Repository providers
-final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
+// Repository providers with async initialization
+final budgetRepositoryProvider = FutureProvider<BudgetRepository>((ref) async {
   return BudgetRepositoryImpl(
-    ref.watch(budgetLocalDataSourceProvider),
+    await ref.watch(budgetLocalDataSourceProvider.future),
     ref.watch(budgetRemoteDataSourceProvider),
   );
 });
 
-final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
+final transactionRepositoryProvider = FutureProvider<TransactionRepository>((ref) async {
   return TransactionRepositoryImpl(
-    ref.watch(transactionLocalDataSourceProvider),
+    await ref.watch(transactionLocalDataSourceProvider.future),
     ref.watch(transactionRemoteDataSourceProvider),
   );
 });
 
-final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
+final categoryRepositoryProvider = FutureProvider<CategoryRepository>((ref) async {
   return CategoryRepositoryImpl(
-    ref.watch(categoryLocalDataSourceProvider),
+    await ref.watch(categoryLocalDataSourceProvider.future),
     ref.watch(categoryRemoteDataSourceProvider),
   );
 });
 
-final spendingAnalysisRepositoryProvider = Provider<SpendingAnalysisRepository>((ref) {
+final spendingAnalysisRepositoryProvider = FutureProvider<SpendingAnalysisRepository>((ref) async {
   return SpendingAnalysisRepositoryImpl(
-    ref.watch(spendingAnalysisLocalDataSourceProvider),
+    await ref.watch(spendingAnalysisLocalDataSourceProvider.future),
     ref.watch(spendingAnalysisRemoteDataSourceProvider),
   );
 });

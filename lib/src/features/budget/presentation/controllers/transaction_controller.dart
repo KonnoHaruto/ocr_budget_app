@@ -8,7 +8,7 @@ import 'package:uuid/uuid.dart';
 class TransactionController extends AsyncNotifier<List<Transaction>> {
   @override
   Future<List<Transaction>> build() async {
-    final repository = ref.watch(transactionRepositoryProvider);
+    final repository = await ref.watch(transactionRepositoryProvider.future);
     return await repository.getTransactions();
   }
 
@@ -24,7 +24,7 @@ class TransactionController extends AsyncNotifier<List<Transaction>> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(transactionRepositoryProvider);
+      final repository = await ref.read(transactionRepositoryProvider.future);
       final transaction = Transaction(
         id: const Uuid().v4(),
         amount: amount,
@@ -51,7 +51,7 @@ class TransactionController extends AsyncNotifier<List<Transaction>> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(transactionRepositoryProvider);
+      final repository = await ref.read(transactionRepositoryProvider.future);
       await repository.updateTransaction(transaction);
       
       // Refresh the transaction list
@@ -66,7 +66,7 @@ class TransactionController extends AsyncNotifier<List<Transaction>> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(transactionRepositoryProvider);
+      final repository = await ref.read(transactionRepositoryProvider.future);
       await repository.deleteTransaction(transactionId);
       
       // Refresh the transaction list
@@ -81,7 +81,7 @@ class TransactionController extends AsyncNotifier<List<Transaction>> {
     state = const AsyncLoading();
     
     try {
-      final repository = ref.read(transactionRepositoryProvider);
+      final repository = await ref.read(transactionRepositoryProvider.future);
       final transactions = await repository.getTransactions();
       state = AsyncValue.data(transactions);
     } catch (error, stackTrace) {
@@ -96,6 +96,6 @@ final transactionControllerProvider = AsyncNotifierProvider<TransactionControlle
 
 // Current month transactions provider
 final currentMonthTransactionsProvider = FutureProvider<List<Transaction>>((ref) async {
-  final repository = ref.watch(transactionRepositoryProvider);
+  final repository = await ref.watch(transactionRepositoryProvider.future);
   return await repository.getCurrentMonthTransactions();
 });
