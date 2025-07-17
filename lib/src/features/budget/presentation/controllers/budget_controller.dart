@@ -78,28 +78,46 @@ final budgetControllerProvider = AsyncNotifierProvider<BudgetController, Budget?
 
 // Budget calculation provider
 final budgetCalculationProvider = FutureProvider<BudgetCalculation?>((ref) async {
-  final budget = await ref.watch(budgetControllerProvider.future);
-  if (budget == null) return null;
-  
-  final transactionRepository = await ref.watch(transactionRepositoryProvider.future);
-  final transactions = await transactionRepository.getCurrentMonthTransactions();
-  
-  final now = DateTime.now();
-  final monthEndDate = DateTime(now.year, now.month, budget.monthEndDay);
-  final adjustedMonthEndDate = monthEndDate.isBefore(now) 
-      ? DateTime(now.year, now.month + 1, budget.monthEndDay)
-      : monthEndDate;
-  
-  final remainingDays = adjustedMonthEndDate.difference(now).inDays + 1;
-  final monthlySpent = transactions.fold(0.0, (sum, transaction) => sum + transaction.amount);
-  final remainingBudget = budget.monthlyBudget - monthlySpent;
-  final todaySpendable = remainingDays > 0 ? remainingBudget / remainingDays : 0.0;
-  
-  return BudgetCalculation(
-    todaySpendable: todaySpendable,
-    remainingDays: remainingDays,
-    monthlySpent: monthlySpent,
-    monthlyBudget: budget.monthlyBudget,
-    monthEndDate: adjustedMonthEndDate,
-  );
+  try {
+    final budget = await ref.watch(budgetControllerProvider.future);
+    if (budget == null) {
+      print('DEBUG: Budget is null');
+      return null;
+    }
+    
+    print('DEBUG: Budget found - monthlyBudget: ${budget.monthlyBudget}, monthEndDay: ${budget.monthEndDay}');
+    
+    final transactionRepository = await ref.watch(transactionRepositoryProvider.future);
+    final transactions = await transactionRepository.getCurrentMonthTransactions();
+    
+    print('DEBUG: Found ${transactions.length} transactions this month');
+    
+    final now = DateTime.now();
+    final monthEndDate = DateTime(now.year, now.month, budget.monthEndDay);
+    final adjustedMonthEndDate = monthEndDate.isBefore(now) 
+        ? DateTime(now.year, now.month + 1, budget.monthEndDay)
+        : monthEndDate;
+    
+    final remainingDays = adjustedMonthEndDate.difference(now).inDays + 1;
+    final monthlySpent = transactions.fold(0.0, (sum, transaction) => sum + transaction.amount);
+    final remainingBudget = budget.monthlyBudget - monthlySpent;
+    final todaySpendable = remainingDays > 0 ? remainingBudget / remainingDays : 0.0;
+    
+    print('DEBUG: monthlySpent: $monthlySpent, remainingDays: $remainingDays, todaySpendable: $todaySpendable');
+    
+    final calculation = BudgetCalculation(
+      todaySpendable: todaySpendable,
+      remainingDays: remainingDays,
+      monthlySpent: monthlySpent,
+      monthlyBudget: budget.monthlyBudget,
+      monthEndDate: adjustedMonthEndDate,
+    );
+    
+    print('DEBUG: BudgetCalculation created successfully');
+    return calculation;
+  } catch (e, stackTrace) {
+    print('DEBUG: Error in budgetCalculationProvider: $e');
+    print('DEBUG: StackTrace: $stackTrace');
+    return null;
+  }
 });

@@ -1,10 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/budget_controller.dart';
-import '../controllers/transaction_controller.dart';
-import '../widgets/budget_card.dart';
-import '../widgets/quick_add_buttons.dart';
-import '../widgets/recent_transactions.dart';
+import '../widgets/circular_budget_display.dart';
+import '../widgets/dark_budget_card.dart';
+import '../widgets/dark_quick_add_buttons.dart';
 import 'budget_setup_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -14,12 +13,33 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final budgetState = ref.watch(budgetControllerProvider);
     final budgetCalculation = ref.watch(budgetCalculationProvider);
-    final transactionsState = ref.watch(currentMonthTransactionsProvider);
 
     return CupertinoPageScaffold(
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Budget Tracker'),
-        backgroundColor: CupertinoColors.systemBackground,
+      backgroundColor: CupertinoColors.black,
+      navigationBar: CupertinoNavigationBar(
+        backgroundColor: CupertinoColors.black,
+        border: null,
+        leading: const Text(
+          'Budget',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: CupertinoColors.white,
+          ),
+        ),
+        trailing: Container(
+          width: 40,
+          height: 40,
+          decoration: const BoxDecoration(
+            color: CupertinoColors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            CupertinoIcons.person_fill,
+            color: CupertinoColors.black,
+            size: 20,
+          ),
+        ),
       ),
       child: SafeArea(
         child: budgetState.when(
@@ -29,50 +49,73 @@ class HomeScreen extends ConsumerWidget {
             }
             
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Budget overview card
+                  const SizedBox(height: 40),
+                  
+                  // Circular budget display
+                  budgetCalculation.when(
+                    data: (calculation) => CircularBudgetDisplay(
+                      calculation: calculation,
+                    ),
+                    loading: () => const CupertinoActivityIndicator(
+                      color: CupertinoColors.white,
+                    ),
+                    error: (error, stack) => const CircularBudgetDisplay(
+                      calculation: null,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 40),
+                  
+                  // Monthly overview card
                   budgetCalculation.when(
                     data: (calculation) => calculation != null 
-                        ? BudgetCard(calculation: calculation)
+                        ? DarkBudgetCard(calculation: calculation)
                         : const SizedBox.shrink(),
-                    loading: () => const CupertinoActivityIndicator(),
-                    error: (error, stack) => Text('Error: $error'),
+                    loading: () => const CupertinoActivityIndicator(
+                      color: CupertinoColors.white,
+                    ),
+                    error: (error, stack) {
+                      print('DEBUG: Error in budgetCalculation: $error');
+                      return Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1C1C1E),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'エラーが発生しました: $error',
+                            style: const TextStyle(
+                              color: CupertinoColors.systemRed,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                   
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 40),
                   
                   // Quick add buttons
-                  const QuickAddButtons(),
+                  const DarkQuickAddButtons(),
                   
-                  const SizedBox(height: 24),
-                  
-                  // Recent transactions
-                  const Text(
-                    'Recent Transactions',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  transactionsState.when(
-                    data: (transactions) => RecentTransactions(
-                      transactions: transactions.take(5).toList(),
-                    ),
-                    loading: () => const CupertinoActivityIndicator(),
-                    error: (error, stack) => Text('Error loading transactions: $error'),
-                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             );
           },
-          loading: () => const Center(child: CupertinoActivityIndicator()),
+          loading: () => const Center(
+            child: CupertinoActivityIndicator(color: CupertinoColors.white),
+          ),
           error: (error, stack) => Center(
-            child: Text('Error: $error'),
+            child: Text(
+              'Error: $error',
+              style: const TextStyle(color: CupertinoColors.systemRed),
+            ),
           ),
         ),
       ),
@@ -102,6 +145,7 @@ class _NoBudgetSetup extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
+                color: CupertinoColors.white,
               ),
               textAlign: TextAlign.center,
             ),

@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'features/budget/presentation/screens/home_screen.dart';
+import 'features/budget/presentation/screens/main_tab_screen.dart';
 import 'features/budget/presentation/controllers/category_controller.dart';
 
 class BudgetApp extends ConsumerStatefulWidget {
@@ -30,10 +30,15 @@ class _BudgetAppState extends ConsumerState<BudgetApp> {
     return CupertinoApp(
       title: 'OCR Budget App',
       theme: const CupertinoThemeData(
-        primaryColor: CupertinoColors.systemBlue,
-        brightness: Brightness.light,
+        primaryColor: CupertinoColors.systemGreen,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: CupertinoColors.black,
+        barBackgroundColor: CupertinoColors.black,
+        textTheme: CupertinoTextThemeData(
+          primaryColor: CupertinoColors.white,
+        ),
       ),
-      home: const HomeScreen(),
+      home: const MainTabScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

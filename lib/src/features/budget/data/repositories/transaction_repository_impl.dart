@@ -58,11 +58,21 @@ class TransactionRepositoryImpl implements TransactionRepository {
   
   @override
   Future<List<Transaction>> getCurrentMonthTransactions() async {
-    final now = DateTime.now();
-    final startOfMonth = DateTime(now.year, now.month, 1);
-    final endOfMonth = DateTime(now.year, now.month + 1, 0);
-    
-    return await getTransactionsByDateRange(startOfMonth, endOfMonth);
+    try {
+      final now = DateTime.now();
+      final startOfMonth = DateTime(now.year, now.month, 1);
+      final endOfMonth = DateTime(now.year, now.month + 1, 0);
+      
+      print('DEBUG: getCurrentMonthTransactions - startOfMonth: $startOfMonth, endOfMonth: $endOfMonth');
+      
+      final transactions = await getTransactionsByDateRange(startOfMonth, endOfMonth);
+      print('DEBUG: getCurrentMonthTransactions - found ${transactions.length} transactions');
+      
+      return transactions;
+    } catch (e) {
+      print('DEBUG: Error in getCurrentMonthTransactions: $e');
+      return [];
+    }
   }
   
   @override

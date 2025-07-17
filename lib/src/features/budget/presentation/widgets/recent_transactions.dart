@@ -16,7 +16,7 @@ class RecentTransactions extends StatelessWidget {
       return Container(
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
-          color: CupertinoColors.systemGrey6,
+          color: const Color(0xFF1C1C1E),
           borderRadius: BorderRadius.circular(12),
         ),
         child: const Center(
@@ -114,6 +114,7 @@ class _TransactionTile extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
+                    color: CupertinoColors.white,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
