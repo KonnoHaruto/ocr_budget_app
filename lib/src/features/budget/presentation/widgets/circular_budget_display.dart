@@ -13,15 +13,15 @@ class CircularBudgetDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 280,
-      height: 280,
+      width: 320,
+      height: 320,
       child: Stack(
         alignment: Alignment.center,
         children: [
           // Background circle
           Container(
-            width: 280,
-            height: 280,
+            width: 320,
+            height: 320,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
@@ -34,7 +34,7 @@ class CircularBudgetDisplay extends StatelessWidget {
           // Progress circle
           if (calculation != null)
             CustomPaint(
-              size: const Size(280, 280),
+              size: const Size(320, 320),
               painter: CircularProgressPainter(
                 progress: _calculateProgress(),
                 strokeWidth: 8,
@@ -83,7 +83,7 @@ class CircularBudgetDisplay extends StatelessWidget {
               const SizedBox(height: 16),
               if (calculation != null)
                 Text(
-                  '¥${calculation!.monthlySpent.toStringAsFixed(0)}中',
+                  '¥${calculation!.monthlySpent.toStringAsFixed(0)} / ¥${calculation!.monthlyBudget.toStringAsFixed(0)}',
                   style: const TextStyle(
                     fontSize: 14,
                     color: CupertinoColors.systemGrey2,
@@ -99,12 +99,12 @@ class CircularBudgetDisplay extends StatelessWidget {
   double _calculateProgress() {
     if (calculation == null) return 0.0;
     
-    final spent = calculation!.monthlySpent;
+    final remaining = calculation!.remainingBudget;
     final budget = calculation!.monthlyBudget;
     
     if (budget <= 0) return 0.0;
     
-    final progress = spent / budget;
+    final progress = remaining / budget;
     return progress.clamp(0.0, 1.0);
   }
 }

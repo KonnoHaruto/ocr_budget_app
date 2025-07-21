@@ -13,12 +13,16 @@ class HistoryScreen extends ConsumerWidget {
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.black,
       navigationBar: const CupertinoNavigationBar(
-        middle: Text(
-          'History',
-          style: TextStyle(color: CupertinoColors.white),
-        ),
         backgroundColor: CupertinoColors.black,
         border: null,
+        leading: Text(
+          'History',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: CupertinoColors.white,
+          ),
+        ),
       ),
       child: SafeArea(
         child: Padding(

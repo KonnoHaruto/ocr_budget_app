@@ -10,6 +10,7 @@ class BudgetCalculation with _$BudgetCalculation {
     required int remainingDays,
     required double monthlySpent,
     required double monthlyBudget,
+    required double remainingBudget,
     required DateTime monthEndDate,
   }) = _BudgetCalculation;
 

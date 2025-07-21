@@ -110,6 +110,7 @@ final budgetCalculationProvider = FutureProvider<BudgetCalculation?>((ref) async
       remainingDays: remainingDays,
       monthlySpent: monthlySpent,
       monthlyBudget: budget.monthlyBudget,
+      remainingBudget: remainingBudget,
       monthEndDate: adjustedMonthEndDate,
     );
     
