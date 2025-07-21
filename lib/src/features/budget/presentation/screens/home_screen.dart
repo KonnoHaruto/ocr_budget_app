@@ -11,8 +11,8 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final budgetState = ref.watch(budgetControllerProvider);
-    final budgetCalculation = ref.watch(budgetCalculationProvider);
+    final budget = ref.watch(budgetControllerProvider.select((s) => s.valueOrNull));
+    final calculation = ref.watch(budgetCalculationProvider.select((s) => s.valueOrNull));
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.black,
@@ -42,82 +42,46 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
       child: SafeArea(
-        child: budgetState.when(
-          data: (budget) {
-            if (budget == null) {
-              return const _NoBudgetSetup();
-            }
-            
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 40),
-                  
-                  // Circular budget display
-                  budgetCalculation.when(
-                    data: (calculation) => CircularBudgetDisplay(
-                      calculation: calculation,
-                    ),
-                    loading: () => const CupertinoActivityIndicator(
-                      color: CupertinoColors.white,
-                    ),
-                    error: (error, stack) => const CircularBudgetDisplay(
-                      calculation: null,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // Monthly overview card
-                  budgetCalculation.when(
-                    data: (calculation) => calculation != null 
+        child: budget == null
+            ? const _NoBudgetSetup()
+            : SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 40),
+                    
+                    // Circular budget display
+                    CircularBudgetDisplay(calculation: calculation),
+                    
+                    const SizedBox(height: 40),
+                    
+                    // Monthly overview card
+                    calculation != null 
                         ? DarkBudgetCard(calculation: calculation)
-                        : const SizedBox.shrink(),
-                    loading: () => const CupertinoActivityIndicator(
-                      color: CupertinoColors.white,
-                    ),
-                    error: (error, stack) {
-                      print('DEBUG: Error in budgetCalculation: $error');
-                      return Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1C1C1E),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'エラーが発生しました: $error',
-                            style: const TextStyle(
-                              color: CupertinoColors.systemRed,
-                              fontSize: 16,
+                        : Container(
+                            width: double.infinity,
+                            height: 120,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1C1C1E),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Center(
+                              child: CupertinoActivityIndicator(
+                                color: CupertinoColors.white,
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // Quick add buttons
-                  const DarkQuickAddButtons(),
-                  
-                  const SizedBox(height: 40),
-                ],
+                    
+                    const SizedBox(height: 40),
+                    
+                    // Quick add buttons
+                    const DarkQuickAddButtons(),
+                    
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
-            );
-          },
-          loading: () => const Center(
-            child: CupertinoActivityIndicator(color: CupertinoColors.white),
-          ),
-          error: (error, stack) => Center(
-            child: Text(
-              'Error: $error',
-              style: const TextStyle(color: CupertinoColors.systemRed),
-            ),
-          ),
-        ),
       ),
     );
   }

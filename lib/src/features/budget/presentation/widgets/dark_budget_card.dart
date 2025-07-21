@@ -46,7 +46,7 @@ class DarkBudgetCard extends StatelessWidget {
           const SizedBox(height: 12),
           
           Text(
-            '¥${calculation.monthlySpent.toStringAsFixed(0)}',
+            '¥${calculation.remainingBudget.toStringAsFixed(0)}',
             style: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w700,
@@ -65,12 +65,10 @@ class DarkBudgetCard extends StatelessWidget {
             ),
             child: FractionallySizedBox(
               alignment: Alignment.centerLeft,
-              widthFactor: (calculation.monthlySpent / calculation.monthlyBudget).clamp(0.0, 1.0),
+              widthFactor: (calculation.remainingBudget / calculation.monthlyBudget).clamp(0.0, 1.0),
               child: Container(
                 decoration: BoxDecoration(
-                  color: calculation.todaySpendable >= 0 
-                      ? CupertinoColors.systemGreen 
-                      : CupertinoColors.systemRed,
+                  color: CupertinoColors.systemGreen,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),

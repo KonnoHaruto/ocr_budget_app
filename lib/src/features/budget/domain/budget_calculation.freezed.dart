@@ -24,6 +24,7 @@ mixin _$BudgetCalculation {
   int get remainingDays => throw _privateConstructorUsedError;
   double get monthlySpent => throw _privateConstructorUsedError;
   double get monthlyBudget => throw _privateConstructorUsedError;
+  double get remainingBudget => throw _privateConstructorUsedError;
   DateTime get monthEndDate => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -43,6 +44,7 @@ abstract class $BudgetCalculationCopyWith<$Res> {
       int remainingDays,
       double monthlySpent,
       double monthlyBudget,
+      double remainingBudget,
       DateTime monthEndDate});
 }
 
@@ -63,6 +65,7 @@ class _$BudgetCalculationCopyWithImpl<$Res, $Val extends BudgetCalculation>
     Object? remainingDays = null,
     Object? monthlySpent = null,
     Object? monthlyBudget = null,
+    Object? remainingBudget = null,
     Object? monthEndDate = null,
   }) {
     return _then(_value.copyWith(
@@ -81,6 +84,10 @@ class _$BudgetCalculationCopyWithImpl<$Res, $Val extends BudgetCalculation>
       monthlyBudget: null == monthlyBudget
           ? _value.monthlyBudget
           : monthlyBudget // ignore: cast_nullable_to_non_nullable
+              as double,
+      remainingBudget: null == remainingBudget
+          ? _value.remainingBudget
+          : remainingBudget // ignore: cast_nullable_to_non_nullable
               as double,
       monthEndDate: null == monthEndDate
           ? _value.monthEndDate
@@ -103,6 +110,7 @@ abstract class _$$BudgetCalculationImplCopyWith<$Res>
       int remainingDays,
       double monthlySpent,
       double monthlyBudget,
+      double remainingBudget,
       DateTime monthEndDate});
 }
 
@@ -121,6 +129,7 @@ class __$$BudgetCalculationImplCopyWithImpl<$Res>
     Object? remainingDays = null,
     Object? monthlySpent = null,
     Object? monthlyBudget = null,
+    Object? remainingBudget = null,
     Object? monthEndDate = null,
   }) {
     return _then(_$BudgetCalculationImpl(
@@ -140,6 +149,10 @@ class __$$BudgetCalculationImplCopyWithImpl<$Res>
           ? _value.monthlyBudget
           : monthlyBudget // ignore: cast_nullable_to_non_nullable
               as double,
+      remainingBudget: null == remainingBudget
+          ? _value.remainingBudget
+          : remainingBudget // ignore: cast_nullable_to_non_nullable
+              as double,
       monthEndDate: null == monthEndDate
           ? _value.monthEndDate
           : monthEndDate // ignore: cast_nullable_to_non_nullable
@@ -156,6 +169,7 @@ class _$BudgetCalculationImpl implements _BudgetCalculation {
       required this.remainingDays,
       required this.monthlySpent,
       required this.monthlyBudget,
+      required this.remainingBudget,
       required this.monthEndDate});
 
   factory _$BudgetCalculationImpl.fromJson(Map<String, dynamic> json) =>
@@ -170,11 +184,13 @@ class _$BudgetCalculationImpl implements _BudgetCalculation {
   @override
   final double monthlyBudget;
   @override
+  final double remainingBudget;
+  @override
   final DateTime monthEndDate;
 
   @override
   String toString() {
-    return 'BudgetCalculation(todaySpendable: $todaySpendable, remainingDays: $remainingDays, monthlySpent: $monthlySpent, monthlyBudget: $monthlyBudget, monthEndDate: $monthEndDate)';
+    return 'BudgetCalculation(todaySpendable: $todaySpendable, remainingDays: $remainingDays, monthlySpent: $monthlySpent, monthlyBudget: $monthlyBudget, remainingBudget: $remainingBudget, monthEndDate: $monthEndDate)';
   }
 
   @override
@@ -190,6 +206,8 @@ class _$BudgetCalculationImpl implements _BudgetCalculation {
                 other.monthlySpent == monthlySpent) &&
             (identical(other.monthlyBudget, monthlyBudget) ||
                 other.monthlyBudget == monthlyBudget) &&
+            (identical(other.remainingBudget, remainingBudget) ||
+                other.remainingBudget == remainingBudget) &&
             (identical(other.monthEndDate, monthEndDate) ||
                 other.monthEndDate == monthEndDate));
   }
@@ -197,7 +215,7 @@ class _$BudgetCalculationImpl implements _BudgetCalculation {
   @JsonKey(ignore: true)
   @override
   int get hashCode => Object.hash(runtimeType, todaySpendable, remainingDays,
-      monthlySpent, monthlyBudget, monthEndDate);
+      monthlySpent, monthlyBudget, remainingBudget, monthEndDate);
 
   @JsonKey(ignore: true)
   @override
@@ -220,6 +238,7 @@ abstract class _BudgetCalculation implements BudgetCalculation {
       required final int remainingDays,
       required final double monthlySpent,
       required final double monthlyBudget,
+      required final double remainingBudget,
       required final DateTime monthEndDate}) = _$BudgetCalculationImpl;
 
   factory _BudgetCalculation.fromJson(Map<String, dynamic> json) =
@@ -233,6 +252,8 @@ abstract class _BudgetCalculation implements BudgetCalculation {
   double get monthlySpent;
   @override
   double get monthlyBudget;
+  @override
+  double get remainingBudget;
   @override
   DateTime get monthEndDate;
   @override
