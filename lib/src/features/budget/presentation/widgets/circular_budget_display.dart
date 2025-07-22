@@ -12,7 +12,7 @@ class CircularBudgetDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 320,
       height: 320,
       child: Stack(
@@ -38,7 +38,7 @@ class CircularBudgetDisplay extends StatelessWidget {
               painter: CircularProgressPainter(
                 progress: _calculateProgress(),
                 strokeWidth: 8,
-                color: calculation!.todaySpendable >= 0 
+                color: calculation!.todayBudget >= 0 
                     ? CupertinoColors.systemGreen 
                     : CupertinoColors.systemRed,
               ),
@@ -59,7 +59,7 @@ class CircularBudgetDisplay extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 calculation != null 
-                    ? '¥${calculation!.todaySpendable.abs().toStringAsFixed(0)}'
+                    ? '¥${calculation!.todayBudget.toStringAsFixed(0)}'
                     : '¥0',
                 style: const TextStyle(
                   fontSize: 48,
@@ -69,12 +69,12 @@ class CircularBudgetDisplay extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                calculation != null && calculation!.todaySpendable >= 0 
+                calculation != null && calculation!.todayBudget >= 0 
                     ? '使用可能' 
                     : '予算超過',
                 style: TextStyle(
                   fontSize: 14,
-                  color: calculation != null && calculation!.todaySpendable >= 0 
+                  color: calculation != null && calculation!.todayBudget >= 0 
                       ? CupertinoColors.systemGrey 
                       : CupertinoColors.systemRed,
                   fontWeight: FontWeight.w500,

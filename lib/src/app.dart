@@ -20,7 +20,7 @@ class _BudgetAppState extends ConsumerState<BudgetApp> {
         await ref.read(categoryControllerProvider.notifier).initializeDefaultCategories();
         FlutterNativeSplash.remove();
       } catch (e) {
-        print('Error initializing default categories: $e');
+        debugPrint('Error initializing default categories: $e');
         FlutterNativeSplash.remove();
       }
     });

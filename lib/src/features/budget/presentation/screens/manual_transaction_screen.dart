@@ -238,7 +238,9 @@ class ManualTransactionScreen extends HookConsumerWidget {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      _showErrorDialog(context, '取引の保存に失敗しました: $e');
+      if (context.mounted) {
+        _showErrorDialog(context, '取引の保存に失敗しました: $e');
+      }
     }
   }
 

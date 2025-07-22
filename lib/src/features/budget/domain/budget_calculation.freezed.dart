@@ -20,7 +20,8 @@ BudgetCalculation _$BudgetCalculationFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$BudgetCalculation {
-  double get todaySpendable => throw _privateConstructorUsedError;
+  double get todayBudget =>
+      throw _privateConstructorUsedError; // Fixed daily budget set at date change
   int get remainingDays => throw _privateConstructorUsedError;
   double get monthlySpent => throw _privateConstructorUsedError;
   double get monthlyBudget => throw _privateConstructorUsedError;
@@ -40,7 +41,7 @@ abstract class $BudgetCalculationCopyWith<$Res> {
       _$BudgetCalculationCopyWithImpl<$Res, BudgetCalculation>;
   @useResult
   $Res call(
-      {double todaySpendable,
+      {double todayBudget,
       int remainingDays,
       double monthlySpent,
       double monthlyBudget,
@@ -61,7 +62,7 @@ class _$BudgetCalculationCopyWithImpl<$Res, $Val extends BudgetCalculation>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? todaySpendable = null,
+    Object? todayBudget = null,
     Object? remainingDays = null,
     Object? monthlySpent = null,
     Object? monthlyBudget = null,
@@ -69,9 +70,9 @@ class _$BudgetCalculationCopyWithImpl<$Res, $Val extends BudgetCalculation>
     Object? monthEndDate = null,
   }) {
     return _then(_value.copyWith(
-      todaySpendable: null == todaySpendable
-          ? _value.todaySpendable
-          : todaySpendable // ignore: cast_nullable_to_non_nullable
+      todayBudget: null == todayBudget
+          ? _value.todayBudget
+          : todayBudget // ignore: cast_nullable_to_non_nullable
               as double,
       remainingDays: null == remainingDays
           ? _value.remainingDays
@@ -106,7 +107,7 @@ abstract class _$$BudgetCalculationImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {double todaySpendable,
+      {double todayBudget,
       int remainingDays,
       double monthlySpent,
       double monthlyBudget,
@@ -125,7 +126,7 @@ class __$$BudgetCalculationImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? todaySpendable = null,
+    Object? todayBudget = null,
     Object? remainingDays = null,
     Object? monthlySpent = null,
     Object? monthlyBudget = null,
@@ -133,9 +134,9 @@ class __$$BudgetCalculationImplCopyWithImpl<$Res>
     Object? monthEndDate = null,
   }) {
     return _then(_$BudgetCalculationImpl(
-      todaySpendable: null == todaySpendable
-          ? _value.todaySpendable
-          : todaySpendable // ignore: cast_nullable_to_non_nullable
+      todayBudget: null == todayBudget
+          ? _value.todayBudget
+          : todayBudget // ignore: cast_nullable_to_non_nullable
               as double,
       remainingDays: null == remainingDays
           ? _value.remainingDays
@@ -165,7 +166,7 @@ class __$$BudgetCalculationImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$BudgetCalculationImpl implements _BudgetCalculation {
   const _$BudgetCalculationImpl(
-      {required this.todaySpendable,
+      {required this.todayBudget,
       required this.remainingDays,
       required this.monthlySpent,
       required this.monthlyBudget,
@@ -176,7 +177,8 @@ class _$BudgetCalculationImpl implements _BudgetCalculation {
       _$$BudgetCalculationImplFromJson(json);
 
   @override
-  final double todaySpendable;
+  final double todayBudget;
+// Fixed daily budget set at date change
   @override
   final int remainingDays;
   @override
@@ -190,7 +192,7 @@ class _$BudgetCalculationImpl implements _BudgetCalculation {
 
   @override
   String toString() {
-    return 'BudgetCalculation(todaySpendable: $todaySpendable, remainingDays: $remainingDays, monthlySpent: $monthlySpent, monthlyBudget: $monthlyBudget, remainingBudget: $remainingBudget, monthEndDate: $monthEndDate)';
+    return 'BudgetCalculation(todayBudget: $todayBudget, remainingDays: $remainingDays, monthlySpent: $monthlySpent, monthlyBudget: $monthlyBudget, remainingBudget: $remainingBudget, monthEndDate: $monthEndDate)';
   }
 
   @override
@@ -198,8 +200,8 @@ class _$BudgetCalculationImpl implements _BudgetCalculation {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$BudgetCalculationImpl &&
-            (identical(other.todaySpendable, todaySpendable) ||
-                other.todaySpendable == todaySpendable) &&
+            (identical(other.todayBudget, todayBudget) ||
+                other.todayBudget == todayBudget) &&
             (identical(other.remainingDays, remainingDays) ||
                 other.remainingDays == remainingDays) &&
             (identical(other.monthlySpent, monthlySpent) ||
@@ -214,7 +216,7 @@ class _$BudgetCalculationImpl implements _BudgetCalculation {
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(runtimeType, todaySpendable, remainingDays,
+  int get hashCode => Object.hash(runtimeType, todayBudget, remainingDays,
       monthlySpent, monthlyBudget, remainingBudget, monthEndDate);
 
   @JsonKey(ignore: true)
@@ -234,7 +236,7 @@ class _$BudgetCalculationImpl implements _BudgetCalculation {
 
 abstract class _BudgetCalculation implements BudgetCalculation {
   const factory _BudgetCalculation(
-      {required final double todaySpendable,
+      {required final double todayBudget,
       required final int remainingDays,
       required final double monthlySpent,
       required final double monthlyBudget,
@@ -245,8 +247,8 @@ abstract class _BudgetCalculation implements BudgetCalculation {
       _$BudgetCalculationImpl.fromJson;
 
   @override
-  double get todaySpendable;
-  @override
+  double get todayBudget;
+  @override // Fixed daily budget set at date change
   int get remainingDays;
   @override
   double get monthlySpent;
