@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import '../screens/ocr_camera_screen.dart';
+import '../screens/manual_transaction_screen.dart';
 
 class DarkQuickAddButtons extends StatelessWidget {
   const DarkQuickAddButtons({super.key});
@@ -21,28 +22,16 @@ class DarkQuickAddButtons extends StatelessWidget {
         _CircularButton(
           icon: CupertinoIcons.doc_text,
           onPressed: () {
-            _showNotImplemented(context, 'Manual input');
+            showCupertinoModalPopup(
+              context: context,
+              builder: (context) => const ManualTransactionScreen(),
+            );
           },
         ),
       ],
     );
   }
 
-  void _showNotImplemented(BuildContext context, String feature) {
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Coming Soon'),
-        content: Text('$feature feature will be implemented soon!'),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _CircularButton extends StatelessWidget {
