@@ -17,9 +17,11 @@ class OcrCameraScreen extends ConsumerWidget {
           children: [
             // Camera preview placeholder
             Positioned.fill(
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                child: Container(
+              child: GestureDetector(
+                onTap: () => FocusScope.of(context).unfocus(),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: Container(
                   color: CupertinoColors.black,
                   child: const Center(
                     child: Column(
@@ -48,6 +50,7 @@ class OcrCameraScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
+                  ),
                   ),
                 ),
               ),
