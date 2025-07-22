@@ -6,7 +6,7 @@ part 'budget_calculation.g.dart';
 @freezed
 class BudgetCalculation with _$BudgetCalculation {
   const factory BudgetCalculation({
-    required double todaySpendable,
+    required double todayBudget, // Fixed daily budget set at date change
     required int remainingDays,
     required double monthlySpent,
     required double monthlyBudget,

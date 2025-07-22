@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../domain/transaction.dart';
 
@@ -8,6 +9,7 @@ class TransactionLocalDataSource {
   
   Future<void> init() async {
     _box = await Hive.openBox<Map<dynamic, dynamic>>(_boxName);
+    debugPrint('DEBUG: Transaction Hive box initialized successfully');
   }
   
   Future<List<Transaction>> getTransactions() async {

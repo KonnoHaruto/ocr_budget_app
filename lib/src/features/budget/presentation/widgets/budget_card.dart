@@ -11,8 +11,8 @@ class BudgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final todaySpendable = calculation.todaySpendable;
-    final isOverBudget = todaySpendable < 0;
+    final todayBudget = calculation.todayBudget;
+    final isOverBudget = todayBudget < 0;
     
     return Container(
       padding: const EdgeInsets.all(20),
@@ -54,7 +54,7 @@ class BudgetCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '¥${todaySpendable.abs().toStringAsFixed(0)}',
+            '¥${todayBudget.abs().toStringAsFixed(0)}',
             style: TextStyle(
               fontSize: 36,
               fontWeight: FontWeight.w700,

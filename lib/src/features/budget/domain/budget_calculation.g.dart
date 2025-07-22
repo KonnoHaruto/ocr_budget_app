@@ -9,7 +9,7 @@ part of 'budget_calculation.dart';
 _$BudgetCalculationImpl _$$BudgetCalculationImplFromJson(
         Map<String, dynamic> json) =>
     _$BudgetCalculationImpl(
-      todaySpendable: (json['todaySpendable'] as num).toDouble(),
+      todayBudget: (json['todayBudget'] as num).toDouble(),
       remainingDays: (json['remainingDays'] as num).toInt(),
       monthlySpent: (json['monthlySpent'] as num).toDouble(),
       monthlyBudget: (json['monthlyBudget'] as num).toDouble(),
@@ -20,7 +20,7 @@ _$BudgetCalculationImpl _$$BudgetCalculationImplFromJson(
 Map<String, dynamic> _$$BudgetCalculationImplToJson(
         _$BudgetCalculationImpl instance) =>
     <String, dynamic>{
-      'todaySpendable': instance.todaySpendable,
+      'todayBudget': instance.todayBudget,
       'remainingDays': instance.remainingDays,
       'monthlySpent': instance.monthlySpent,
       'monthlyBudget': instance.monthlyBudget,

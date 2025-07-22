@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../transaction_repository.dart';
 import '../datasources/local/transaction_local_data_source.dart';
 import '../datasources/remote/transaction_remote_data_source.dart';
@@ -63,14 +64,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
       final startOfMonth = DateTime(now.year, now.month, 1);
       final endOfMonth = DateTime(now.year, now.month + 1, 0);
       
-      print('DEBUG: getCurrentMonthTransactions - startOfMonth: $startOfMonth, endOfMonth: $endOfMonth');
+      debugPrint('DEBUG: getCurrentMonthTransactions - startOfMonth: $startOfMonth, endOfMonth: $endOfMonth');
       
       final transactions = await getTransactionsByDateRange(startOfMonth, endOfMonth);
-      print('DEBUG: getCurrentMonthTransactions - found ${transactions.length} transactions');
+      debugPrint('DEBUG: getCurrentMonthTransactions - found ${transactions.length} transactions');
       
       return transactions;
     } catch (e) {
-      print('DEBUG: Error in getCurrentMonthTransactions: $e');
+      debugPrint('DEBUG: Error in getCurrentMonthTransactions: $e');
       return [];
     }
   }

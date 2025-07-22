@@ -44,7 +44,7 @@ class DarkBudgetCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (calculation.todaySpendable < 0)
+              if (calculation.todayBudget < 0)
                 const Text(
                   '予算超過',
                   style: TextStyle(

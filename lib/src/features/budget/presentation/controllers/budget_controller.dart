@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/budget.dart';
 import '../../domain/budget_calculation.dart';
+import '../../domain/transaction.dart';
 import '../../../../shared/providers/repository_providers.dart';
+import 'transaction_controller.dart';
+import 'daily_budget_controller.dart';
 import 'package:uuid/uuid.dart';
 
 class BudgetController extends AsyncNotifier<Budget?> {
@@ -81,16 +85,30 @@ final budgetCalculationProvider = FutureProvider<BudgetCalculation?>((ref) async
   try {
     final budget = await ref.watch(budgetControllerProvider.future);
     if (budget == null) {
-      print('DEBUG: Budget is null');
+      debugPrint('DEBUG: Budget is null');
       return null;
     }
     
-    print('DEBUG: Budget found - monthlyBudget: ${budget.monthlyBudget}, monthEndDay: ${budget.monthEndDay}');
+    debugPrint('DEBUG: Budget found - monthlyBudget: ${budget.monthlyBudget}, monthEndDay: ${budget.monthEndDay}');
     
-    final transactionRepository = await ref.watch(transactionRepositoryProvider.future);
-    final transactions = await transactionRepository.getCurrentMonthTransactions();
+    // Watch transaction controller state for automatic updates
+    final transactionState = ref.watch(transactionControllerProvider);
+    final transactions = await transactionState.when(
+      data: (allTransactions) async {
+        final now = DateTime.now();
+        final startOfMonth = DateTime(now.year, now.month, 1);
+        final endOfMonth = DateTime(now.year, now.month + 1, 0);
+        
+        return allTransactions.where((transaction) {
+          return transaction.date.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
+                 transaction.date.isBefore(endOfMonth.add(const Duration(days: 1)));
+        }).toList();
+      },
+      loading: () async => <Transaction>[],
+      error: (error, stackTrace) async => <Transaction>[],
+    );
     
-    print('DEBUG: Found ${transactions.length} transactions this month');
+    debugPrint('DEBUG: Found ${transactions.length} transactions this month');
     
     final now = DateTime.now();
     final monthEndDate = DateTime(now.year, now.month, budget.monthEndDay);
@@ -101,12 +119,14 @@ final budgetCalculationProvider = FutureProvider<BudgetCalculation?>((ref) async
     final remainingDays = adjustedMonthEndDate.difference(now).inDays + 1;
     final monthlySpent = transactions.fold(0.0, (sum, transaction) => sum + transaction.amount);
     final remainingBudget = budget.monthlyBudget - monthlySpent;
-    final todaySpendable = remainingDays > 0 ? remainingBudget / remainingDays : 0.0;
     
-    print('DEBUG: monthlySpent: $monthlySpent, remainingDays: $remainingDays, todaySpendable: $todaySpendable');
+    final dailyBudget = await ref.read(dailyBudgetControllerProvider.future);
+    final todayBudget = dailyBudget?.amount ?? 0.0;
+    
+    debugPrint('DEBUG: monthlySpent: $monthlySpent, remainingDays: $remainingDays, todayBudget: $todayBudget');
     
     final calculation = BudgetCalculation(
-      todaySpendable: todaySpendable,
+      todayBudget: todayBudget,
       remainingDays: remainingDays,
       monthlySpent: monthlySpent,
       monthlyBudget: budget.monthlyBudget,
@@ -114,11 +134,11 @@ final budgetCalculationProvider = FutureProvider<BudgetCalculation?>((ref) async
       monthEndDate: adjustedMonthEndDate,
     );
     
-    print('DEBUG: BudgetCalculation created successfully');
+    debugPrint('DEBUG: BudgetCalculation created successfully');
     return calculation;
   } catch (e, stackTrace) {
-    print('DEBUG: Error in budgetCalculationProvider: $e');
-    print('DEBUG: StackTrace: $stackTrace');
+    debugPrint('DEBUG: Error in budgetCalculationProvider: $e');
+    debugPrint('DEBUG: StackTrace: $stackTrace');
     return null;
   }
 });
