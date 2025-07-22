@@ -99,12 +99,13 @@ class CircularBudgetDisplay extends StatelessWidget {
   double _calculateProgress() {
     if (calculation == null) return 0.0;
     
-    final remaining = calculation!.remainingBudget;
-    final budget = calculation!.monthlyBudget;
+    final todayRemaining = calculation!.todayBudget;
+    final baseDailyBudget = calculation!.baseDailyBudget;
     
-    if (budget <= 0) return 0.0;
+    if (baseDailyBudget <= 0) return 0.0;
     
-    final progress = remaining / budget;
+    // Progress shows how much of today's budget is remaining (0 = fully spent, 1 = untouched)
+    final progress = todayRemaining / baseDailyBudget;
     return progress.clamp(0.0, 1.0);
   }
 }

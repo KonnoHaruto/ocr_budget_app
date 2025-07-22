@@ -120,13 +120,26 @@ final budgetCalculationProvider = FutureProvider<BudgetCalculation?>((ref) async
     final monthlySpent = transactions.fold(0.0, (sum, transaction) => sum + transaction.amount);
     final remainingBudget = budget.monthlyBudget - monthlySpent;
     
+    // Calculate today's remaining budget (fixed daily budget - today's spending)
     final dailyBudget = await ref.read(dailyBudgetControllerProvider.future);
-    final todayBudget = dailyBudget?.amount ?? 0.0;
+    final baseDailyBudget = dailyBudget?.amount ?? 0.0;
     
-    debugPrint('DEBUG: monthlySpent: $monthlySpent, remainingDays: $remainingDays, todayBudget: $todayBudget');
+    // Get today's spending
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    final todayEnd = todayStart.add(const Duration(days: 1));
+    
+    final todaySpending = transactions
+        .where((t) => !t.date.isBefore(todayStart) && t.date.isBefore(todayEnd))
+        .fold<double>(0, (sum, t) => sum + t.amount);
+    
+    final todayBudget = baseDailyBudget - todaySpending;
+    
+    debugPrint('DEBUG: monthlySpent: $monthlySpent, remainingDays: $remainingDays, baseDailyBudget: $baseDailyBudget, todaySpending: $todaySpending, todayBudget: $todayBudget');
     
     final calculation = BudgetCalculation(
       todayBudget: todayBudget,
+      baseDailyBudget: baseDailyBudget,
       remainingDays: remainingDays,
       monthlySpent: monthlySpent,
       monthlyBudget: budget.monthlyBudget,
