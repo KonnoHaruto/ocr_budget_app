@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import '../screens/ocr_camera_screen.dart';
 
 class DarkQuickAddButtons extends StatelessWidget {
   const DarkQuickAddButtons({super.key});
@@ -11,7 +12,10 @@ class DarkQuickAddButtons extends StatelessWidget {
         _CircularButton(
           icon: CupertinoIcons.camera,
           onPressed: () {
-            _showNotImplemented(context, 'OCR scanning');
+            showCupertinoModalPopup(
+              context: context,
+              builder: (context) => const OcrCameraScreen(),
+            );
           },
         ),
         _CircularButton(
