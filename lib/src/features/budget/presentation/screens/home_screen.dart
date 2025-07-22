@@ -7,7 +7,9 @@ import '../widgets/dark_quick_add_buttons.dart';
 import 'budget_setup_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
+  final PageController? pageController;
+  
+  const HomeScreen({super.key, this.pageController});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,9 +37,9 @@ class HomeScreen extends ConsumerWidget {
             shape: BoxShape.circle,
           ),
           child: const Icon(
-            CupertinoIcons.person_fill,
+            CupertinoIcons.settings,
             color: CupertinoColors.black,
-            size: 20,
+            size: 24,
           ),
         ),
       ),
