@@ -10,6 +10,7 @@ _$BudgetCalculationImpl _$$BudgetCalculationImplFromJson(
         Map<String, dynamic> json) =>
     _$BudgetCalculationImpl(
       todayBudget: (json['todayBudget'] as num).toDouble(),
+      baseDailyBudget: (json['baseDailyBudget'] as num).toDouble(),
       remainingDays: (json['remainingDays'] as num).toInt(),
       monthlySpent: (json['monthlySpent'] as num).toDouble(),
       monthlyBudget: (json['monthlyBudget'] as num).toDouble(),
@@ -21,6 +22,7 @@ Map<String, dynamic> _$$BudgetCalculationImplToJson(
         _$BudgetCalculationImpl instance) =>
     <String, dynamic>{
       'todayBudget': instance.todayBudget,
+      'baseDailyBudget': instance.baseDailyBudget,
       'remainingDays': instance.remainingDays,
       'monthlySpent': instance.monthlySpent,
       'monthlyBudget': instance.monthlyBudget,

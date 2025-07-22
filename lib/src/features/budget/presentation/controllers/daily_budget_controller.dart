@@ -12,15 +12,13 @@ class DailyBudgetController extends AsyncNotifier<DailyBudget?> {
   @override
   Future<DailyBudget?> build() async {
     _box = await Hive.openBox<Map<dynamic, dynamic>>(_boxName);
+    
+    // Watch for transaction changes to trigger recalculation
+    ref.watch(transactionControllerProvider);
 
     final today = DateTime.now();
-    final todayKey = _formatDateKey(today);
-
-    final cached = _box.get(todayKey);
-    if (cached != null) {
-      return DailyBudget.fromJson(Map<String, dynamic>.from(cached));
-    }
-
+    
+    // Always recalculate for today to ensure fresh data after transactions
     return _calculateDailyBudget(today);
   }
 
