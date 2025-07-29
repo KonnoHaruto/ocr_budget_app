@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import '../../domain/transaction.dart';
 import '../../domain/transaction_input_method.dart';
+import '../screens/transaction_edit_sheet.dart';
 
 class RecentTransactions extends StatelessWidget {
   final List<Transaction> transactions;
@@ -51,10 +52,10 @@ class RecentTransactions extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground,
+        color: const Color(0xFF1C1C1E),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: CupertinoColors.systemGrey4,
+          color: CupertinoColors.systemGrey6.withValues(alpha: 0.3),
           width: 0.5,
         ),
       ),
@@ -65,7 +66,7 @@ class RecentTransactions extends StatelessWidget {
             if (i < transactions.length - 1)
               Container(
                 height: 1,
-                color: CupertinoColors.systemGrey5,
+                color: CupertinoColors.systemGrey6.withValues(alpha: 0.2),
               ),
           ],
         ],
@@ -81,11 +82,22 @@ class _TransactionTile extends StatelessWidget {
     required this.transaction,
   });
 
+  void _showEditSheet(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (context) => TransactionEditSheet(transaction: transaction),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
+    return GestureDetector(
+      onTap: () => _showEditSheet(context),
+      child: Container(
+        color: CupertinoColors.transparent,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
         children: [
           // Transaction icon based on input method
           Container(
@@ -110,7 +122,7 @@ class _TransactionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  transaction.description,
+                  _getTransactionTitle(),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -140,9 +152,18 @@ class _TransactionTile extends StatelessWidget {
               color: CupertinoColors.systemRed,
             ),
           ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
+  }
+
+  String _getTransactionTitle() {
+    if (transaction.inputMethod == TransactionInputMethod.manual) {
+      return '手入力';
+    }
+    return transaction.description.isNotEmpty ? transaction.description : 'OCR取引';
   }
 
   IconData _getIcon() {
@@ -167,14 +188,17 @@ class _TransactionTile extends StatelessWidget {
     final now = DateTime.now();
     final difference = now.difference(date);
     
+    // Format time (HH:mm)
+    final timeStr = '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    
     if (difference.inDays == 0) {
-      return 'Today';
+      return 'Today $timeStr';
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return 'Yesterday $timeStr';
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return '${difference.inDays} days ago $timeStr';
     } else {
-      return '${date.month}/${date.day}/${date.year}';
+      return '${date.month}/${date.day}/${date.year} $timeStr';
     }
   }
 }
