@@ -1,170 +1,303 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:camera/camera.dart';
 
-class OcrCameraScreen extends ConsumerWidget {
+class OcrCameraScreen extends ConsumerStatefulWidget {
   const OcrCameraScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OcrCameraScreen> createState() => _OcrCameraScreenState();
+}
+
+class _OcrCameraScreenState extends ConsumerState<OcrCameraScreen> {
+  CameraController? _cameraController;
+  bool _isCameraInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  @override
+  void dispose() {
+    _cameraController?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeCamera() async {
+    try {
+      final cameras = await availableCameras();
+      if (cameras.isNotEmpty) {
+        _cameraController = CameraController(
+          cameras.first,
+          ResolutionPreset.high,
+        );
+        await _cameraController!.initialize();
+        if (mounted) {
+          setState(() {
+            _isCameraInitialized = true;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Camera initialization error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-        height: MediaQuery.of(context).size.height * 0.9,
-        decoration: const BoxDecoration(
-          color: CupertinoColors.black,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        ),
-        child: Stack(
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: const BoxDecoration(
+        color: CupertinoColors.black,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: SafeArea(
+        child: Column(
           children: [
-            // Camera preview placeholder
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () => FocusScope.of(context).unfocus(),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                  child: Container(
-                  color: CupertinoColors.black,
-                  child: const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          CupertinoIcons.camera_fill,
-                          size: 80,
-                          color: CupertinoColors.systemGrey,
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          'カメラプレビュー',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: CupertinoColors.systemGrey,
-                          ),
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          'ここに実際にカメラプレビューが表示されます',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: CupertinoColors.systemGrey2,
-                          ),
-                        ),
-                      ],
+            // Top bar with title and close button
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'レシートを撮影',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: CupertinoColors.white,
                     ),
                   ),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: Color(0x40000000),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.xmark,
+                        color: CupertinoColors.white,
+                        size: 18,
+                      ),
+                    ),
                   ),
+                ],
+              ),
+            ),
+            
+            // Camera preview section
+            Expanded(
+              flex: 4,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: CupertinoColors.systemGrey6,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: _isCameraInitialized && _cameraController != null
+                      ? SizedBox.expand(
+                          child: FittedBox(
+                            fit: BoxFit.cover,
+                            child: SizedBox(
+                              width: _cameraController!.value.previewSize!.height,
+                              height: _cameraController!.value.previewSize!.width,
+                              child: CameraPreview(_cameraController!),
+                            ),
+                          ),
+                        )
+                      : const Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CupertinoActivityIndicator(
+                                color: CupertinoColors.systemGrey,
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'カメラを初期化中...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: CupertinoColors.systemGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                 ),
               ),
             ),
             
-            // Top bar with title and close button
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'レシートを撮影',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: CupertinoColors.white,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: const BoxDecoration(
-                          color: Color(0x40000000),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          CupertinoIcons.xmark,
-                          color: CupertinoColors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ],
+            const SizedBox(height: 20),
+            
+            // Photo mode indicator
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+              decoration: BoxDecoration(
+                color: CupertinoColors.systemYellow,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                'PHOTO',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: CupertinoColors.black,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.0,
                 ),
               ),
             ),
+            
+            const SizedBox(height: 16),
             
             // Bottom camera controls
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: SafeArea(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // Gallery button
-                      _CameraControlButton(
-                        icon: CupertinoIcons.photo,
-                        onTap: () => _handleGalleryTap(context, ref),
-                      ),
-                      
-                      // Capture button
-                      GestureDetector(
-                        onTap: () => _handleCaptureTap(context, ref),
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: const BoxDecoration(
-                            color: CupertinoColors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            CupertinoIcons.camera_fill,
-                            color: CupertinoColors.black,
-                            size: 32,
-                          ),
-                        ),
-                      ),
-                      
-                      // Switch camera button
-                      _CameraControlButton(
-                        icon: CupertinoIcons.camera_rotate,
-                        onTap: () => _handleSwitchCameraTap(context, ref),
-                      ),
-                    ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Gallery button
+                  _CameraControlButton(
+                    icon: CupertinoIcons.photo,
+                    onTap: () => _handleGalleryTap(context),
                   ),
-                ),
+                  
+                  // Capture button
+                  GestureDetector(
+                    onTap: () => _handleCaptureTap(context),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: const BoxDecoration(
+                        color: CupertinoColors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        CupertinoIcons.camera_fill,
+                        color: CupertinoColors.black,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                  
+                  // Switch camera button
+                  _CameraControlButton(
+                    icon: CupertinoIcons.camera_rotate,
+                    onTap: () => _handleSwitchCameraTap(context),
+                  ),
+                ],
               ),
             ),
+            
+            const SizedBox(height: 20),
           ],
         ),
-      );
+      ),
+    );
   }
 
-  void _handleGalleryTap(BuildContext context, WidgetRef ref) {
-    // TODO: Future implementation with Riverpod state management
-    _showComingSoonDialog(context, 'ギャラリー機能');
+  void _handleGalleryTap(BuildContext context) async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      
+      if (image != null && mounted) {
+        // TODO: Process the selected image for OCR
+        _showSuccessDialog(this.context, 'ギャラリーから画像を選択しました: ${image.name}');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog(this.context, 'ギャラリーからの画像選択に失敗しました: $e');
+      }
+    }
   }
 
-  void _handleCaptureTap(BuildContext context, WidgetRef ref) {
+  void _handleCaptureTap(BuildContext context) async {
     // Add haptic feedback
     HapticFeedback.mediumImpact();
-    // TODO: Future implementation with Riverpod state management for camera capture
-    _showComingSoonDialog(context, '撮影機能');
+    
+    if (_cameraController == null || !_isCameraInitialized) {
+      if (mounted) {
+        _showErrorDialog(this.context, 'カメラが初期化されていません');
+      }
+      return;
+    }
+    
+    try {
+      final XFile photo = await _cameraController!.takePicture();
+      if (mounted) {
+        // TODO: Process the captured photo for OCR
+        _showSuccessDialog(this.context, '写真を撮影しました: ${photo.name}');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog(this.context, '写真の撮影に失敗しました: $e');
+      }
+    }
   }
 
-  void _handleSwitchCameraTap(BuildContext context, WidgetRef ref) {
-    // TODO: Future implementation with Riverpod state management for camera switching
-    _showComingSoonDialog(context, 'カメラ切り替え機能');
+  void _handleSwitchCameraTap(BuildContext context) async {
+    if (_cameraController == null) return;
+    
+    try {
+      final cameras = await availableCameras();
+      if (cameras.length > 1) {
+        final currentCamera = _cameraController!.description;
+        final newCamera = cameras.firstWhere(
+          (camera) => camera != currentCamera,
+          orElse: () => cameras.first,
+        );
+        
+        await _cameraController!.dispose();
+        _cameraController = CameraController(newCamera, ResolutionPreset.high);
+        await _cameraController!.initialize();
+        
+        if (mounted) {
+          setState(() {});
+        }
+      } else {
+        if (mounted) {
+          _showErrorDialog(this.context, '利用可能なカメラが1つしかありません');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog(this.context, 'カメラの切り替えに失敗しました: $e');
+      }
+    }
   }
 
-  void _showComingSoonDialog(BuildContext context, String feature) {
+
+  void _showSuccessDialog(BuildContext context, String message) {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        title: const Text('開発中'),
-        content: Text('$featureは現在開発中です。'),
+        title: const Text('成功'),
+        content: Text(message),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text('エラー'),
+        content: Text(message),
         actions: [
           CupertinoDialogAction(
             onPressed: () => Navigator.of(context).pop(),

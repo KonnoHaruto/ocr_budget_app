@@ -49,5 +49,11 @@
 		<true/>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSCameraUsageDescription</key>
+		<string>この機能では、レシートを撮影して支出を記録するためにカメラを使用します。</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>この機能では、保存済みのレシート画像を選択するためにフォトライブラリにアクセスします。</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>この機能では、レシート撮影時にカメラ機能の一部としてマイクアクセスが必要です。</string>
 	</dict>
 </plist>
