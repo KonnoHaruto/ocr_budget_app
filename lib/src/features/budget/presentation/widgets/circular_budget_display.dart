@@ -18,20 +18,18 @@ class CircularBudgetDisplay extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Background circle
-          Container(
-            width: 320,
-            height: 320,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: CupertinoColors.systemGrey6,
-                width: 8,
+          // Used budget background (full circle)
+          if (calculation != null)
+            CustomPaint(
+              size: const Size(320, 320),
+              painter: CircularProgressPainter(
+                progress: 1.0, // Full circle for used portion
+                strokeWidth: 8,
+                color: CupertinoColors.systemGrey4, // Gray for used portion
               ),
             ),
-          ),
           
-          // Progress circle
+          // Remaining budget progress circle
           if (calculation != null)
             CustomPaint(
               size: const Size(320, 320),
