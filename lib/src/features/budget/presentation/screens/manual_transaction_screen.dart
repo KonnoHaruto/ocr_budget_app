@@ -144,6 +144,7 @@ class ManualTransactionScreen extends HookConsumerWidget {
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
+                                        color: CupertinoColors.white,
                                       ),
                                     ),
                             ),
