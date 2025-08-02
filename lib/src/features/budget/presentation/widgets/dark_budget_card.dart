@@ -69,22 +69,29 @@ class DarkBudgetCard extends StatelessWidget {
           const SizedBox(height: 16),
           
           // Progress bar
-          Container(
-            height: 8,
-            decoration: BoxDecoration(
-              color: CupertinoColors.systemGrey6,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: (calculation.remainingBudget / calculation.monthlyBudget).clamp(0.0, 1.0),
-              child: Container(
+          Stack(
+            children: [
+              // Gray background for full budget (50000)
+              Container(
+                height: 8,
                 decoration: BoxDecoration(
-                  color: CupertinoColors.systemGreen,
+                  color: CupertinoColors.systemGrey4,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
-            ),
+              // Green progress for remaining budget
+              FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: (calculation.remainingBudget / 50000).clamp(0.0, 1.0),
+                child: Container(
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: CupertinoColors.systemGreen,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ],
           ),
           
           const SizedBox(height: 16),
