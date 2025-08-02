@@ -46,9 +46,9 @@
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<key>UIStatusBarHidden</key>
-		<true/>
-		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>UIViewControllerBasedStatusBarAppearance</key>
+		<true/>
 		<key>NSCameraUsageDescription</key>
 		<string>この機能では、レシートを撮影して支出を記録するためにカメラを使用します。</string>
 		<key>NSPhotoLibraryUsageDescription</key>

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'ocr_result_screen.dart';
 
 class OcrCameraScreen extends ConsumerStatefulWidget {
   const OcrCameraScreen({super.key});
@@ -14,6 +16,8 @@ class OcrCameraScreen extends ConsumerStatefulWidget {
 class _OcrCameraScreenState extends ConsumerState<OcrCameraScreen> {
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
+  bool _isProcessingOcr = false;
+  final TextRecognizer _textRecognizer = TextRecognizer();
 
   @override
   void initState() {
@@ -24,6 +28,7 @@ class _OcrCameraScreenState extends ConsumerState<OcrCameraScreen> {
   @override
   void dispose() {
     _cameraController?.dispose();
+    _textRecognizer.close();
     super.dispose();
   }
 
@@ -104,13 +109,16 @@ class _OcrCameraScreenState extends ConsumerState<OcrCameraScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: _isCameraInitialized && _cameraController != null
-                      ? SizedBox.expand(
-                          child: FittedBox(
-                            fit: BoxFit.cover,
-                            child: SizedBox(
-                              width: _cameraController!.value.previewSize!.height,
-                              height: _cameraController!.value.previewSize!.width,
-                              child: CameraPreview(_cameraController!),
+                      ? GestureDetector(
+                          onTapUp: (details) => _onCameraViewTap(details),
+                          child: SizedBox.expand(
+                            child: FittedBox(
+                              fit: BoxFit.cover,
+                              child: SizedBox(
+                                width: _cameraController!.value.previewSize!.height,
+                                height: _cameraController!.value.previewSize!.width,
+                                child: CameraPreview(_cameraController!),
+                              ),
                             ),
                           ),
                         )
@@ -158,43 +166,60 @@ class _OcrCameraScreenState extends ConsumerState<OcrCameraScreen> {
             
             const SizedBox(height: 16),
             
-            // Bottom camera controls
+            // Bottom camera controls or loading indicator
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  // Gallery button
-                  _CameraControlButton(
-                    icon: CupertinoIcons.photo,
-                    onTap: () => _handleGalleryTap(context),
-                  ),
-                  
-                  // Capture button
-                  GestureDetector(
-                    onTap: () => _handleCaptureTap(context),
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: const BoxDecoration(
-                        color: CupertinoColors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        CupertinoIcons.camera_fill,
-                        color: CupertinoColors.black,
-                        size: 32,
-                      ),
+              child: _isProcessingOcr
+                  ? Column(
+                      children: [
+                        const CupertinoActivityIndicator(
+                          color: CupertinoColors.white,
+                          radius: 20,
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'OCR処理中...',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: CupertinoColors.systemGrey,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // Gallery button
+                        _CameraControlButton(
+                          icon: CupertinoIcons.photo,
+                          onTap: () => _handleGalleryTap(context),
+                        ),
+                        
+                        // Capture button
+                        GestureDetector(
+                          onTap: () => _handleCaptureTap(context),
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: const BoxDecoration(
+                              color: CupertinoColors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              CupertinoIcons.camera_fill,
+                              color: CupertinoColors.black,
+                              size: 32,
+                            ),
+                          ),
+                        ),
+                        
+                        // Switch camera button
+                        _CameraControlButton(
+                          icon: CupertinoIcons.camera_rotate,
+                          onTap: () => _handleSwitchCameraTap(context),
+                        ),
+                      ],
                     ),
-                  ),
-                  
-                  // Switch camera button
-                  _CameraControlButton(
-                    icon: CupertinoIcons.camera_rotate,
-                    onTap: () => _handleSwitchCameraTap(context),
-                  ),
-                ],
-              ),
             ),
             
             const SizedBox(height: 20),
@@ -231,16 +256,80 @@ class _OcrCameraScreenState extends ConsumerState<OcrCameraScreen> {
       return;
     }
     
+    if (_isProcessingOcr) {
+      return; // Already processing
+    }
+    
     try {
+      setState(() {
+        _isProcessingOcr = true;
+      });
+      
       final XFile photo = await _cameraController!.takePicture();
+      
       if (mounted) {
-        // TODO: Process the captured photo for OCR
-        _showSuccessDialog(this.context, '写真を撮影しました: ${photo.name}');
+        // Process OCR
+        await _processOcrAndNavigate(photo.path);
       }
     } catch (e) {
       if (mounted) {
         _showErrorDialog(this.context, '写真の撮影に失敗しました: $e');
       }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessingOcr = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _processOcrAndNavigate(String imagePath) async {
+    try {
+      // Process OCR
+      final inputImage = InputImage.fromFilePath(imagePath);
+      final recognizedText = await _textRecognizer.processImage(inputImage);
+      
+      if (mounted) {
+        // Navigate to result screen
+        showCupertinoModalPopup<void>(
+          context: context,
+          builder: (context) => OcrResultScreen(
+            imagePath: imagePath,
+            ocrText: recognizedText.text.isNotEmpty ? recognizedText.text : null,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog(this.context, 'OCR処理に失敗しました: $e');
+      }
+    }
+  }
+
+  void _onCameraViewTap(TapUpDetails details) async {
+    if (_cameraController == null || !_isCameraInitialized) return;
+
+    try {
+      // タップ位置を正規化（0.0-1.0の範囲）
+      final RenderBox renderBox = context.findRenderObject() as RenderBox;
+      final size = renderBox.size;
+      final offset = details.localPosition;
+      
+      final double x = offset.dx / size.width;
+      final double y = offset.dy / size.height;
+      
+      // フォーカスポイントを設定
+      await _cameraController!.setFocusPoint(Offset(x, y));
+      
+      // 露出も同じポイントに設定（オプション）
+      await _cameraController!.setExposurePoint(Offset(x, y));
+      
+      // ハプティックフィードバック
+      HapticFeedback.lightImpact();
+      
+    } catch (e) {
+      debugPrint('Focus failed: $e');
     }
   }
 
