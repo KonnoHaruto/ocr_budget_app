@@ -38,26 +38,26 @@ class HomeScreenContent extends ConsumerWidget {
           onRefresh: () => _onRefresh(ref),
         ),
         SliverPadding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
               
               // Circular budget display
               CircularBudgetDisplay(calculation: calculation),
               
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
               
               // Monthly budget card
               if (calculation != null) 
                 DarkBudgetCard(calculation: calculation),
               
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
               
               // Quick add buttons
               const DarkQuickAddButtons(),
               
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
             ]),
           ),
         ),

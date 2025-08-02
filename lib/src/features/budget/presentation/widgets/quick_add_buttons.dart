@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import '../screens/ocr_camera_screen.dart';
+import '../screens/manual_transaction_screen.dart';
 
 class QuickAddButtons extends StatelessWidget {
   const QuickAddButtons({super.key});
@@ -13,8 +15,10 @@ class QuickAddButtons extends StatelessWidget {
             label: 'Scan Receipt',
             color: CupertinoColors.systemBlue,
             onPressed: () {
-              // TODO: Navigate to OCR scanning screen
-              _showNotImplemented(context, 'OCR scanning');
+              showCupertinoModalPopup<void>(
+                context: context,
+                builder: (context) => const OcrCameraScreen(),
+              );
             },
           ),
         ),
@@ -25,8 +29,10 @@ class QuickAddButtons extends StatelessWidget {
             label: 'Add Manually',
             color: CupertinoColors.systemGreen,
             onPressed: () {
-              // TODO: Navigate to manual input screen
-              _showNotImplemented(context, 'Manual input');
+              showCupertinoModalPopup<void>(
+                context: context,
+                builder: (context) => const ManualTransactionScreen(),
+              );
             },
           ),
         ),
@@ -34,21 +40,6 @@ class QuickAddButtons extends StatelessWidget {
     );
   }
 
-  void _showNotImplemented(BuildContext context, String feature) {
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Coming Soon'),
-        content: Text('$feature feature will be implemented soon!'),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _QuickAddButton extends StatelessWidget {
